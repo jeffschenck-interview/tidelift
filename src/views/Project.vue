@@ -1,5 +1,5 @@
 <template>
-  <div v-if="projectData">
+  <div>
     <section class="hero is-dark is-bold">
       <div class="hero-body">
         <div class="container">
@@ -113,18 +113,28 @@ export default {
       return this.$route.params.project
     },
     projectData () {
-      return this.platforms[this.platform] && this.platforms[this.platform][this.project].data
+      if (!this.platforms[this.platform] || !this.platforms[this.platform][this.project]) {
+        return {}
+      }
+      return this.platforms[this.platform][this.project].data
     },
     versionsReversed () {
+      if (!this.projectData) {
+        return []
+      }
       return this.projectData.versions.slice().reverse()
     },
     projectDependencies () {
-      return this.platforms[this.platform] && this.platforms[this.platform][this.project].dependencies
+      if (!this.platforms[this.platform] || !this.platforms[this.platform][this.project]) {
+        return {}
+      }
+      return this.platforms[this.platform][this.project].dependencies
     },
     versionDependencies () {
-      return this.projectDependencies &&
-        this.projectDependencies[this.selectedVersion] &&
-        this.projectDependencies[this.selectedVersion].dependencies
+      if (!this.projectDependencies || !this.projectDependencies[this.selectedVersion]) {
+        return []
+      }
+      return this.projectDependencies[this.selectedVersion].dependencies
     },
   },
   watch: {
