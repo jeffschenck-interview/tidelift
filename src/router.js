@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/views/Home'
 import Platform from '@/views/Platform'
-import Package from '@/views/Package'
+import Project from '@/views/Project'
 
 Vue.use(Router)
 
@@ -20,9 +20,9 @@ export default new Router({
       component: Platform,
     },
     {
-      path: '/:platform/:name',
-      name: 'package',
-      component: Package,
+      path: '/:platform/:project',
+      name: 'project',
+      component: Project,
     },
   ],
 })
