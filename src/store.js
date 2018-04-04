@@ -9,8 +9,14 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     platforms: {},
+    topProjects: [],
   },
   actions: {
+    async loadTopProjects ({commit}) {
+      const url = `https://libraries.io/api/search?q=&sort=rank&per_page=10&api_key=${API_KEY}`
+      const data = (await axios.get(url)).data
+      commit('setTopProjects', {data})
+    },
     async loadProject ({commit}, {platform, project}) {
       const url = `https://libraries.io/api/${platform}/${project}?api_key=${API_KEY}`
       const data = (await axios.get(url)).data
@@ -23,6 +29,9 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    setTopProjects (state, {data}) {
+      state.topProjects = data
+    },
     setProject (state, {platform, project, data}) {
       if (!state.platforms[platform]) {
         Vue.set(state.platforms, platform, {})
