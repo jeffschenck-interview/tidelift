@@ -36,7 +36,7 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="{number, published_at} in projectData.versions"
+                  v-for="{number, published_at} in versionsReversed"
                   :key="number"
                   :class="{'is-selected': number === selectedVersion}"
                   @click="setSelectedVersion(number)"
@@ -49,18 +49,42 @@
           </div>
           <div class="column is-8">
             <h2 class="title is-3">Dependencies</h2>
-            <ul v-if="versionDependencies">
-              <li v-for="dependency in versionDependencies" :key="`${dependency.platform}-${dependency.project_name}`">
-                <router-link
-                  :to="{
-                    name: 'project',
-                    params: {platform: dependency.platform, project: dependency.project_name}
-                }">
-                  {{ dependency.project_name }}
-                </router-link>
-                {{ dependency.platform }}
-              </li>
-            </ul>
+            <table class="table is-hoverable is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Platform</th>
+                  <th>Requirement</th>
+                  <th>Latest</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loadingProjectDependencies">
+                  <td colspan="4">Loading...</td>
+                </tr>
+                <tr
+                  v-for="dependency in versionDependencies"
+                  v-else-if="versionDependencies"
+                  :key="`${dependency.platform}-${dependency.project_name}`"
+                >
+                  <td>
+                    <router-link
+                      :to="{
+                        name: 'project',
+                        params: {platform: dependency.platform, project: dependency.project_name}
+                    }">
+                      {{ dependency.project_name }}
+                    </router-link>
+                  </td>
+                  <td>{{ dependency.platform }}</td>
+                  <td>{{ dependency.requirements }}</td>
+                  <td>{{ dependency.latest }}</td>
+                </tr>
+                <tr v-else>
+                  <td colspan="4">No dependencies</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -76,6 +100,8 @@ export default {
   data () {
     return {
       selectedVersion: null,
+      loadingProject: false,
+      loadingProjectDependencies: false,
     }
   },
   computed: {
@@ -88,6 +114,9 @@ export default {
     },
     projectData () {
       return this.platforms[this.platform] && this.platforms[this.platform][this.project].data
+    },
+    versionsReversed () {
+      return this.projectData.versions.slice().reverse()
     },
     projectDependencies () {
       return this.platforms[this.platform] && this.platforms[this.platform][this.project].dependencies
@@ -107,18 +136,22 @@ export default {
   },
   methods: {
     async loadProject () {
+      this.loadingProject = true
       await this.$store.dispatch('loadProject', {
         platform: this.platform,
         project: this.project,
       })
-      this.setSelectedVersion(this.projectData.versions[0].number)
+      this.setSelectedVersion(this.versionsReversed[0].number)
+      this.loadingProject = false
     },
     async loadProjectDependencies (version) {
+      this.loadingProjectDependencies = true
       await this.$store.dispatch('loadProjectDependencies', {
         platform: this.platform,
         project: this.project,
         version,
       })
+      this.loadingProjectDependencies = false
     },
     setSelectedVersion (number) {
       this.selectedVersion = number
