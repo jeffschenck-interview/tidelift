@@ -36,6 +36,7 @@
             </div>
           </li>
         </ul>
+        <router-link :to="{name: 'search'}">Search for Packages</router-link>
       </div>
     </section>
   </div>
