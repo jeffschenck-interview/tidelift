@@ -64,7 +64,7 @@
                 </tr>
                 <tr
                   v-for="dependency in versionDependencies"
-                  v-else-if="versionDependencies"
+                  v-else-if="versionDependencies.length"
                   :key="`${dependency.platform}-${dependency.project_name}`"
                 >
                   <td>
@@ -119,7 +119,7 @@ export default {
       return this.platforms[this.platform][this.project].data
     },
     versionsReversed () {
-      if (!this.projectData) {
+      if (!this.projectData || !this.projectData.versions) {
         return []
       }
       return this.projectData.versions.slice().reverse()
