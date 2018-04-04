@@ -33,32 +33,7 @@
             </div>
           </div>
         </form>
-        <ul>
-          <li v-for="project in results" :key="`${project.platform}-${project.name}`">
-            <router-link
-              :to="{
-                name: 'project',
-                params: {platform: project.platform, project: project.name}
-              }"
-            >
-              {{ project.name }}
-            </router-link>
-            <div class="field is-grouped is-grouped-multiline">
-              <div class="control">
-                <div class="tags has-addons">
-                  <span class="tag">Platform</span>
-                  <span class="tag is-primary">{{ project.platform }}</span>
-                </div>
-              </div>
-              <div class="control">
-                <div class="tags has-addons">
-                  <span class="tag">Stars</span>
-                  <span class="tag is-primary">{{ project.stars }}</span>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ul>
+        <project-list :projects="results" />
       </div>
     </section>
   </div>
@@ -66,12 +41,16 @@
 
 <script>
 import axios from 'axios'
+import ProjectList from '@/components/ProjectList'
 
 // TODO: better API key management... this should not be in our code directly :)
 const API_KEY = 'e483b50879647d6c31cfdc901cc1c9c4'
 
 export default {
   name: 'Search',
+  components: {
+    ProjectList,
+  },
   data () {
     return {
       loading: false,
