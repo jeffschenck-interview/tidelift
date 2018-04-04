@@ -25,10 +25,8 @@
     <section class="section">
       <div class="container">
         <div class="columns">
-          <div class="column is-8">
-            <h2 class="title is-3">Dependencies</h2>
-          </div>
-          <div class="column">
+          <div class="column is-4">
+            <h2 class="title is-3">Versions</h2>
             <table class="table is-hoverable is-fullwidth">
               <thead>
                 <tr>
@@ -37,12 +35,32 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="{number, published_at} in projectData.versions" :key="number">
+                <tr
+                  v-for="{number, published_at} in projectData.versions"
+                  :key="number"
+                  :class="{'is-selected': number === selectedVersion}"
+                  @click="setSelectedVersion(number)"
+                >
                   <td>{{ number }}</td>
                   <td>{{ published_at|moment('MMM D, YYYY') }}</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="column is-8">
+            <h2 class="title is-3">Dependencies</h2>
+            <ul v-if="versionDependencies">
+              <li v-for="dependency in versionDependencies" :key="`${dependency.platform}-${dependency.project_name}`">
+                <router-link
+                  :to="{
+                    name: 'project',
+                    params: {platform: dependency.platform, project: dependency.project_name}
+                }">
+                  {{ dependency.project_name }}
+                </router-link>
+                {{ dependency.platform }}
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -55,6 +73,11 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'Project',
+  data () {
+    return {
+      selectedVersion: null,
+    }
+  },
   computed: {
     ...mapState(['platforms']),
     platform () {
@@ -64,7 +87,15 @@ export default {
       return this.$route.params.project
     },
     projectData () {
-      return this.platforms[this.platform] && this.platforms[this.platform][this.project]
+      return this.platforms[this.platform] && this.platforms[this.platform][this.project].data
+    },
+    projectDependencies () {
+      return this.platforms[this.platform] && this.platforms[this.platform][this.project].dependencies
+    },
+    versionDependencies () {
+      return this.projectDependencies &&
+        this.projectDependencies[this.selectedVersion] &&
+        this.projectDependencies[this.selectedVersion].dependencies
     },
   },
   watch: {
@@ -76,10 +107,22 @@ export default {
   },
   methods: {
     async loadProject () {
-      this.$store.dispatch('loadProject', {
+      await this.$store.dispatch('loadProject', {
         platform: this.platform,
         project: this.project,
       })
+      this.setSelectedVersion(this.projectData.versions[0].number)
+    },
+    async loadProjectDependencies (version) {
+      await this.$store.dispatch('loadProjectDependencies', {
+        platform: this.platform,
+        project: this.project,
+        version,
+      })
+    },
+    setSelectedVersion (number) {
+      this.selectedVersion = number
+      this.loadProjectDependencies(number)
     },
   },
 }

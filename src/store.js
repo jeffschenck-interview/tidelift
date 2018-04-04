@@ -16,13 +16,39 @@ export default new Vuex.Store({
       const data = (await axios.get(url)).data
       commit('setProject', {platform, project, data})
     },
+    async loadProjectDependencies ({commit}, {platform, project, version}) {
+      const url = `https://libraries.io/api/${platform}/${project}/${version}/dependencies?api_key=${API_KEY}`
+      const data = (await axios.get(url)).data
+      commit('setProjectDependencies', {platform, project, version, data})
+    },
   },
   mutations: {
     setProject (state, {platform, project, data}) {
       if (!state.platforms[platform]) {
         Vue.set(state.platforms, platform, {})
       }
-      Vue.set(state.platforms[platform], project, data)
+      if (!state.platforms[platform][project]) {
+        Vue.set(state.platforms[platform], project, {
+          data: {},
+          dependencies: {},
+        })
+      }
+      state.platforms[platform][project].data = data
+    },
+    setProjectDependencies (state, {platform, project, version, data}) {
+      if (!state.platforms[platform]) {
+        Vue.set(state.platforms, platform, {})
+      }
+      if (!state.platforms[platform][project]) {
+        Vue.set(state.platforms[platform], project, {
+          data: {},
+          dependencies: {},
+        })
+      }
+      if (!state.platforms[platform][project].dependencies[version]) {
+        Vue.set(state.platforms[platform][project].dependencies, version, {})
+      }
+      state.platforms[platform][project].dependencies[version] = data
     },
   },
 })
